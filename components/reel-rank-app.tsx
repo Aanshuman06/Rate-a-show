@@ -19,7 +19,7 @@ import {
 } from "@/lib/ranking";
 import { loadEntries, saveEntries } from "@/lib/storage";
 
-export function ReelRankApp() {
+export function RateMyMovieApp() {
   const [entries, setEntries] = useState<Entry[]>(seedEntries());
   const [comparisonSession, setComparisonSession] = useState<ComparisonSession | null>(null);
   const [feedback, setFeedback] = useState("");

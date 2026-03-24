@@ -1,6 +1,6 @@
 import { normalizeEntry, type Entry } from "@/lib/ranking";
 
-const STORAGE_KEY = "reelrank.entries";
+const STORAGE_KEY = "ratemymovie.entries";
 
 export function loadEntries(): Entry[] {
   if (typeof window === "undefined") {

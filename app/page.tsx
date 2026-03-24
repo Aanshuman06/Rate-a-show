@@ -1,5 +1,5 @@
-import { ReelRankApp } from "@/components/reel-rank-app";
+import { RateMyMovieApp } from "@/components/reel-rank-app";
 
 export default function Home() {
-  return <ReelRankApp />;
+  return <RateMyMovieApp />;
 }

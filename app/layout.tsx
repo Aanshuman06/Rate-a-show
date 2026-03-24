@@ -9,7 +9,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "ReelRank",
+  title: "RateMyMovie",
   description: "A taste-based movie and TV ranking app driven by comparisons, not manual star ratings.",
 };
 

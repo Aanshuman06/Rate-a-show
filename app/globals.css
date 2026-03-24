@@ -757,12 +757,25 @@ input {
 }
 
 .empty {
+  display: grid;
+  gap: 6px;
+  place-items: center;
   padding: 20px;
   border: 1px dashed var(--line);
   border-radius: var(--radius-md);
   color: var(--muted);
   text-align: center;
   background: rgba(255, 255, 255, 0.02);
+}
+
+.empty strong {
+  color: var(--text-soft);
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.empty span {
+  max-width: 28ch;
 }
 
 .panel-secondary section {

@@ -17,7 +17,10 @@ export function RankedList({ entries, onOpenLibrary }: RankedListProps) {
       </div>
 
       {entries.length === 0 ? (
-        <div className="empty">Start by adding your first movie.</div>
+        <div className="empty">
+          <strong>No rankings yet.</strong>
+          <span>Start by adding your first movie or TV show.</span>
+        </div>
       ) : (
         <>
           <ol className="list">

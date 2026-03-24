@@ -119,47 +119,7 @@ function buildEntry(pending: PendingTitle, absoluteIndex: number, entries: Entry
 }
 
 export function seedEntries() {
-  return withDerivedFields([
-    {
-      id: "seed-interstellar",
-      title: "Interstellar",
-      type: "movie",
-      rewatch: true,
-      sentiment: "liked",
-      rankPosition: 1,
-      internalScore: 1120,
-      visibleScore: 0,
-      comparisonCount: 7,
-      confidence: 0,
-      confidenceLabel: "low",
-    },
-    {
-      id: "seed-breaking-bad",
-      title: "Breaking Bad",
-      type: "tv",
-      rewatch: false,
-      sentiment: "liked",
-      rankPosition: 2,
-      internalScore: 1000,
-      visibleScore: 0,
-      comparisonCount: 5,
-      confidence: 0,
-      confidenceLabel: "low",
-    },
-    {
-      id: "seed-suits",
-      title: "Suits",
-      type: "tv",
-      rewatch: false,
-      sentiment: "disliked",
-      rankPosition: 3,
-      internalScore: 880,
-      visibleScore: 0,
-      comparisonCount: 2,
-      confidence: 0,
-      confidenceLabel: "low",
-    },
-  ]);
+  return withDerivedFields([]);
 }
 
 export function createComparisonSession(entries: Entry[], pending: PendingTitle): ComparisonSession | null {

@@ -29,12 +29,22 @@ export function RankedList({ entries, onOpenLibrary }: RankedListProps) {
           <ol className="list">
             {previewEntries.map((entry) => (
               <li className={`row ${entry.rankPosition === 1 ? "row-top" : ""}`} key={entry.id}>
-                <div className="row-main">
-                  <span className="row-title">{entry.title}</span>
-                  <span className="meta">
-                    {formatTypeLabel(entry.type)} • {formatWatchLabel(entry.rewatch)}
-                    {entry.genres.length > 0 ? ` • ${entry.genres.slice(0, 2).join(", ")}` : ""}
-                  </span>
+                <div className="row-media">
+                  {entry.posterPath ? (
+                    <img className="poster-thumb" src={entry.posterPath} alt="" />
+                  ) : (
+                    <div className="poster-thumb poster-fallback" aria-hidden="true">🎬</div>
+                  )}
+                  <div className="row-main">
+                    <span className="row-title">
+                      {entry.title}
+                      {entry.year ? <span className="row-year">{entry.year}</span> : null}
+                    </span>
+                    <span className="meta">
+                      {formatTypeLabel(entry.type)} • {formatWatchLabel(entry.rewatch)}
+                      {entry.genres.length > 0 ? ` • ${entry.genres.slice(0, 2).join(", ")}` : ""}
+                    </span>
+                  </div>
                 </div>
                 <div className="row-score">
                   <strong className="score-value">{entry.visibleScore.toFixed(1)}</strong>

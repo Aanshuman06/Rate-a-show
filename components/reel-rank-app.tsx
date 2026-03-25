@@ -187,10 +187,18 @@ export function RateMyMovieApp() {
             <div className="library-grid">
               {filteredLibraryEntries.map((entry) => (
                 <article className="library-card" key={entry.id}>
-                  <div className="library-card-rank">#{entry.rankPosition}</div>
+                  {entry.posterPath ? (
+                    <img className="library-poster" src={entry.posterPath} alt="" />
+                  ) : (
+                    <div className="library-poster library-poster-fallback" aria-hidden="true">🎬</div>
+                  )}
                   <div className="library-card-body">
-                    <strong className="library-card-title">{entry.title}</strong>
+                    <div className="library-card-head">
+                      <strong className="library-card-title">{entry.title}</strong>
+                      <span className="library-rank">#{entry.rankPosition}</span>
+                    </div>
                     <p className="library-meta">
+                      {entry.year ? `${entry.year} • ` : ""}
                       {formatTypeLabel(entry.type)} • {formatWatchLabel(entry.rewatch)}
                       {entry.genres.length > 0 ? ` • ${entry.genres.slice(0, 2).join(", ")}` : ""}
                     </p>

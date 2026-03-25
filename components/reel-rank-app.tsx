@@ -104,8 +104,8 @@ export function RateMyMovieApp() {
       <section className="split-layout">
         <div className="panel panel-primary">
           <div className="hero-copy">
-            <h1 className="title">Train your movie taste</h1>
-            <p className="intro">Pick between movies. We&apos;ll build your rankings.</p>
+            <h1 className="title">Pick your favorite. We&apos;ll rank the rest.</h1>
+            <p className="intro">Choose between movies. We&apos;ll build your rankings.</p>
           </div>
 
           <div className="stack">

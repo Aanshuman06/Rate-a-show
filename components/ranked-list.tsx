@@ -10,16 +10,19 @@ export function RankedList({ entries, onOpenLibrary }: RankedListProps) {
   const hiddenCount = Math.max(entries.length - previewEntries.length, 0);
 
   return (
-    <section>
+    <section className={`rankings-section ${entries.length === 0 ? "is-empty" : ""}`}>
       <div className="list-header">
         <h2>Your Rankings</h2>
         <span>{entries.length} titles</span>
       </div>
 
       {entries.length === 0 ? (
-        <div className="empty">
-          <strong>No rankings yet.</strong>
-          <span>Start by adding your first movie or TV show.</span>
+        <div className="empty-state-wrap">
+          <div className="empty">
+            <div className="empty-icon" aria-hidden="true">🎬</div>
+            <strong>Nothing ranked yet</strong>
+            <span>Add your first movie to get started.</span>
+          </div>
         </div>
       ) : (
         <>

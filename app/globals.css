@@ -219,6 +219,8 @@ input {
   display: grid;
   gap: 8px;
   padding: 8px;
+  max-height: 360px;
+  overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 18px;
   background:
@@ -226,6 +228,23 @@ input {
     rgba(16, 16, 16, 0.96);
   backdrop-filter: blur(22px);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+}
+
+.search-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-dropdown::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.search-dropdown::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .search-result {

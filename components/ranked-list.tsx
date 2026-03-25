@@ -31,7 +31,10 @@ export function RankedList({ entries, onOpenLibrary }: RankedListProps) {
               <li className={`row ${entry.rankPosition === 1 ? "row-top" : ""}`} key={entry.id}>
                 <div className="row-main">
                   <span className="row-title">{entry.title}</span>
-                  <span className="meta">{formatTypeLabel(entry.type)} • {formatWatchLabel(entry.rewatch)}</span>
+                  <span className="meta">
+                    {formatTypeLabel(entry.type)} • {formatWatchLabel(entry.rewatch)}
+                    {entry.genres.length > 0 ? ` • ${entry.genres.slice(0, 2).join(", ")}` : ""}
+                  </span>
                 </div>
                 <div className="row-score">
                   <strong className="score-value">{entry.visibleScore.toFixed(1)}</strong>

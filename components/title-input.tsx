@@ -1,25 +1,105 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { TmdbSuggestion } from "@/lib/tmdb";
 import type { Sentiment, TitleType } from "@/lib/ranking";
 
 type TitleInputProps = {
   disabled: boolean;
-  onSubmit: (payload: { title: string; sentiment: Sentiment; type: TitleType; rewatch: boolean }) => void;
+  onSubmit: (payload: {
+    title: string;
+    sentiment: Sentiment;
+    type: TitleType;
+    tmdbId: number | null;
+    genres: string[];
+    year: number | null;
+    posterPath: string | null;
+    rewatch: boolean;
+  }) => void;
 };
 
 export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
   const [title, setTitle] = useState("");
   const [type, setType] = useState<TitleType>("movie");
   const [rewatch, setRewatch] = useState(false);
+  const [suggestions, setSuggestions] = useState<TmdbSuggestion[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<TmdbSuggestion | null>(null);
+  const [debouncedTitle, setDebouncedTitle] = useState("");
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedTitle(title.trim());
+    }, 350);
+
+    return () => window.clearTimeout(timeout);
+  }, [title]);
+
+  useEffect(() => {
+    if (disabled || debouncedTitle.length < 2 || selectedSuggestion?.title === title.trim()) {
+      setSuggestions([]);
+      setIsSearching(false);
+      return;
+    }
+
+    let isCancelled = false;
+    setIsSearching(true);
+
+    fetch(`/api/tmdb/search?query=${encodeURIComponent(debouncedTitle)}`)
+      .then((response) => response.json() as Promise<{ results: TmdbSuggestion[] }>)
+      .then((data) => {
+        if (!isCancelled) {
+          setSuggestions(data.results ?? []);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setSuggestions([]);
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setIsSearching(false);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [debouncedTitle, disabled, selectedSuggestion, title]);
 
   const handleSubmit = (sentiment: Sentiment) => {
     const normalized = title.trim();
     if (!normalized || disabled) return;
-    onSubmit({ title: normalized, sentiment, type, rewatch });
+    onSubmit({
+      title: normalized,
+      sentiment,
+      type: selectedSuggestion?.type ?? type,
+      tmdbId: selectedSuggestion?.tmdbId ?? null,
+      genres: selectedSuggestion?.genres ?? [],
+      year: selectedSuggestion?.year ?? null,
+      posterPath: selectedSuggestion?.posterPath ?? null,
+      rewatch,
+    });
     setTitle("");
     setType("movie");
     setRewatch(false);
+    setSelectedSuggestion(null);
+    setSuggestions([]);
+  };
+
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    if (selectedSuggestion && value.trim() !== selectedSuggestion.title) {
+      setSelectedSuggestion(null);
+    }
+  };
+
+  const handleSelectSuggestion = (suggestion: TmdbSuggestion) => {
+    setSelectedSuggestion(suggestion);
+    setTitle(suggestion.title);
+    setType(suggestion.type);
+    setSuggestions([]);
   };
 
   return (
@@ -32,11 +112,39 @@ export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
         className="input"
         type="text"
         value={title}
-        onChange={(event) => setTitle(event.target.value)}
+        onChange={(event) => handleTitleChange(event.target.value)}
         placeholder="Enter movie or TV show..."
         autoComplete="off"
         disabled={disabled}
       />
+      {(isSearching || suggestions.length > 0) && (
+        <div className="search-dropdown">
+          {isSearching && suggestions.length === 0 ? (
+            <div className="search-empty">Searching TMDb…</div>
+          ) : (
+            suggestions.map((suggestion) => (
+              <button
+                key={`${suggestion.type}-${suggestion.tmdbId}`}
+                className="search-result"
+                type="button"
+                onClick={() => handleSelectSuggestion(suggestion)}
+              >
+                {suggestion.posterPath ? (
+                  <img className="search-poster" src={suggestion.posterPath} alt="" />
+                ) : (
+                  <div className="search-poster search-poster-fallback" aria-hidden="true">🎬</div>
+                )}
+                <span className="search-copy">
+                  <strong>{suggestion.title}</strong>
+                  <span>
+                    {suggestion.year ?? "Unknown"} • {suggestion.type === "movie" ? "Movie" : "TV Show"}
+                  </span>
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
       <div className="selector-group">
         <div className="selector-row">
           <span className="selector-label">Type</span>
@@ -44,7 +152,7 @@ export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
             <button
               className={`segment ${type === "movie" ? "is-active" : ""}`}
               type="button"
-              disabled={disabled}
+              disabled={disabled || Boolean(selectedSuggestion)}
               onClick={() => setType("movie")}
             >
               Movie
@@ -52,7 +160,7 @@ export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
             <button
               className={`segment ${type === "tv" ? "is-active" : ""}`}
               type="button"
-              disabled={disabled}
+              disabled={disabled || Boolean(selectedSuggestion)}
               onClick={() => setType("tv")}
             >
               TV Show

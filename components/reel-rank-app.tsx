@@ -65,11 +65,33 @@ export function RateMyMovieApp() {
     }
   }, [comparisonSession, entries, nextComparison]);
 
-  const handleSubmit = ({ title, sentiment, type, rewatch }: { title: string; sentiment: Sentiment; type: TitleType; rewatch: boolean }) => {
+  const handleSubmit = ({
+    title,
+    sentiment,
+    type,
+    tmdbId,
+    genres,
+    year,
+    posterPath,
+    rewatch,
+  }: {
+    title: string;
+    sentiment: Sentiment;
+    type: TitleType;
+    tmdbId: number | null;
+    genres: string[];
+    year: number | null;
+    posterPath: string | null;
+    rewatch: boolean;
+  }) => {
     const session = createComparisonSession(entries, {
       title,
       sentiment,
       type,
+      tmdbId,
+      genres,
+      year,
+      posterPath,
       rewatch,
     });
 
@@ -88,8 +110,8 @@ export function RateMyMovieApp() {
 
     const updatedSession: ComparisonSession = {
       ...comparisonSession,
-      lowerBound: decision === "less" ? nextComparison.midpoint + 1 : comparisonSession.lowerBound,
-      upperBound: decision === "more" ? nextComparison.midpoint : comparisonSession.upperBound,
+      lowerBound: decision === "less" ? nextComparison.targetIndex + 1 : comparisonSession.lowerBound,
+      upperBound: decision === "more" ? nextComparison.targetIndex : comparisonSession.upperBound,
       comparisonCount: comparisonSession.comparisonCount + 1,
       comparedIds: comparisonSession.comparedIds.includes(nextComparison.target.id)
         ? comparisonSession.comparedIds
@@ -168,7 +190,10 @@ export function RateMyMovieApp() {
                   <div className="library-card-rank">#{entry.rankPosition}</div>
                   <div className="library-card-body">
                     <strong className="library-card-title">{entry.title}</strong>
-                    <p className="library-meta">{formatTypeLabel(entry.type)} • {formatWatchLabel(entry.rewatch)}</p>
+                    <p className="library-meta">
+                      {formatTypeLabel(entry.type)} • {formatWatchLabel(entry.rewatch)}
+                      {entry.genres.length > 0 ? ` • ${entry.genres.slice(0, 2).join(", ")}` : ""}
+                    </p>
                   </div>
                   <div className="library-card-score">
                     <strong>{entry.visibleScore.toFixed(1)}</strong>

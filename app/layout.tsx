@@ -1,12 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
 import type { ReactNode } from "react";
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "RateMyMovie",
@@ -20,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={spaceGrotesk.className}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

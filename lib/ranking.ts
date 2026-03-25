@@ -6,6 +6,10 @@ export type Entry = {
   id: string;
   title: string;
   type: TitleType;
+  tmdbId: number | null;
+  genres: string[];
+  year: number | null;
+  posterPath: string | null;
   rewatch: boolean;
   sentiment: Sentiment;
   rankPosition: number;
@@ -19,6 +23,10 @@ export type Entry = {
 export type PendingTitle = {
   title: string;
   type: TitleType;
+  tmdbId: number | null;
+  genres: string[];
+  year: number | null;
+  posterPath: string | null;
   rewatch: boolean;
   sentiment: Sentiment;
 };
@@ -34,7 +42,7 @@ export type ComparisonSession = {
 
 export type ComparisonPrompt = {
   target: Entry;
-  midpoint: number;
+  targetIndex: number;
 };
 
 type RankedResult = {
@@ -107,6 +115,10 @@ function buildEntry(pending: PendingTitle, absoluteIndex: number, entries: Entry
     id: createId(),
     title: pending.title,
     type: pending.type,
+    tmdbId: pending.tmdbId,
+    genres: pending.genres,
+    year: pending.year,
+    posterPath: pending.posterPath,
     rewatch: pending.rewatch,
     sentiment: pending.sentiment,
     rankPosition: absoluteIndex + 1,
@@ -139,6 +151,10 @@ export function normalizeEntry(entry: Partial<Entry> & Pick<Entry, "id" | "title
   return {
     ...entry,
     type: entry.type === "tv" ? "tv" : "movie",
+    tmdbId: typeof entry.tmdbId === "number" ? entry.tmdbId : null,
+    genres: Array.isArray(entry.genres) ? entry.genres.filter((genre): genre is string => typeof genre === "string") : [],
+    year: typeof entry.year === "number" ? entry.year : null,
+    posterPath: typeof entry.posterPath === "string" ? entry.posterPath : null,
     rewatch: Boolean(entry.rewatch),
   };
 }
@@ -151,17 +167,87 @@ export function formatWatchLabel(rewatch: boolean) {
   return rewatch ? "Rewatch" : "First watch";
 }
 
+function genreOverlapScore(a: string[], b: string[]) {
+  if (a.length === 0 || b.length === 0) return 0;
+  const left = new Set(a);
+  const matches = b.filter((genre) => left.has(genre)).length;
+  return matches / Math.max(a.length, b.length);
+}
+
+function typeMatchScore(pending: PendingTitle, candidate: Entry) {
+  return pending.type === candidate.type ? 1 : 0;
+}
+
+function rangeClosenessScore(index: number, lowerBound: number, upperBound: number) {
+  const midpoint = (lowerBound + upperBound - 1) / 2;
+  const maxDistance = Math.max((upperBound - lowerBound - 1) / 2, 1);
+  return 1 - Math.min(Math.abs(index - midpoint) / maxDistance, 1);
+}
+
+function uncertaintyScore(candidate: Entry) {
+  return 1 - candidate.confidence;
+}
+
+function candidateScore(
+  pending: PendingTitle,
+  candidate: Entry,
+  index: number,
+  lowerBound: number,
+  upperBound: number,
+  allowCrossGenreBias: boolean,
+) {
+  const sharedGenreScore = genreOverlapScore(pending.genres, candidate.genres);
+  const score =
+    0.4 * typeMatchScore(pending, candidate) +
+    0.3 * sharedGenreScore +
+    0.2 * rangeClosenessScore(index, lowerBound, upperBound) +
+    0.1 * uncertaintyScore(candidate);
+
+  if (allowCrossGenreBias && sharedGenreScore === 0) {
+    return score + 0.2;
+  }
+
+  return score;
+}
+
 export function getNextComparison(entries: Entry[], session: ComparisonSession): ComparisonPrompt | null {
   const bucket = bucketEntries(entries, session.bucket);
   if (session.lowerBound >= session.upperBound || bucket.length === 0) {
     return null;
   }
 
-  const midpoint = Math.floor((session.lowerBound + session.upperBound) / 2);
-  return {
-    target: bucket[midpoint],
-    midpoint,
-  };
+  const candidateIndexes = bucket
+    .map((candidate, index) => ({ candidate, index }))
+    .filter(({ index }) => index >= session.lowerBound && index < session.upperBound);
+
+  if (candidateIndexes.length === 0) {
+    return null;
+  }
+
+  const allowCrossGenreBias = Math.random() < 0.2;
+  const best = candidateIndexes.reduce((bestCandidate, current) => {
+    const currentScore = candidateScore(
+      session.pending,
+      current.candidate,
+      current.index,
+      session.lowerBound,
+      session.upperBound,
+      allowCrossGenreBias,
+    );
+
+    if (!bestCandidate || currentScore > bestCandidate.score) {
+      return { ...current, score: currentScore };
+    }
+
+    return bestCandidate;
+  }, null as { candidate: Entry; index: number; score: number } | null);
+
+  return best
+    ? {
+        target: best.candidate,
+        targetIndex: best.index,
+      }
+    : null;
 }
 
 /**

@@ -286,6 +286,13 @@ input {
   padding: 10px 12px;
 }
 
+.selection-message {
+  margin: 0;
+  color: #f6c36d;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
 .selector-group {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -369,6 +376,13 @@ input {
   letter-spacing: -0.02em;
   cursor: pointer;
   transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
 }
 
 .button:hover {

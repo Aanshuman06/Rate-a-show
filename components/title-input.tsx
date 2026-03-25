@@ -26,6 +26,7 @@ export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState<TmdbSuggestion | null>(null);
   const [debouncedTitle, setDebouncedTitle] = useState("");
+  const [selectionMessage, setSelectionMessage] = useState("");
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -71,14 +72,19 @@ export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
   const handleSubmit = (sentiment: Sentiment) => {
     const normalized = title.trim();
     if (!normalized || disabled) return;
+    if (!selectedSuggestion) {
+      setSelectionMessage("Select a title from the TMDb results to continue.");
+      return;
+    }
+
     onSubmit({
       title: normalized,
       sentiment,
-      type: selectedSuggestion?.type ?? type,
-      tmdbId: selectedSuggestion?.tmdbId ?? null,
-      genres: selectedSuggestion?.genres ?? [],
-      year: selectedSuggestion?.year ?? null,
-      posterPath: selectedSuggestion?.posterPath ?? null,
+      type: selectedSuggestion.type,
+      tmdbId: selectedSuggestion.tmdbId,
+      genres: selectedSuggestion.genres,
+      year: selectedSuggestion.year,
+      posterPath: selectedSuggestion.posterPath,
       rewatch,
     });
     setTitle("");
@@ -86,10 +92,12 @@ export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
     setRewatch(false);
     setSelectedSuggestion(null);
     setSuggestions([]);
+    setSelectionMessage("");
   };
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
+    setSelectionMessage("");
     if (selectedSuggestion && value.trim() !== selectedSuggestion.title) {
       setSelectedSuggestion(null);
     }
@@ -100,7 +108,10 @@ export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
     setTitle(suggestion.title);
     setType(suggestion.type);
     setSuggestions([]);
+    setSelectionMessage("");
   };
+
+  const canSubmit = !disabled && Boolean(selectedSuggestion);
 
   return (
     <div className="input-block">
@@ -121,6 +132,8 @@ export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
         <div className="search-dropdown">
           {isSearching && suggestions.length === 0 ? (
             <div className="search-empty">Searching TMDb…</div>
+          ) : !isSearching && suggestions.length === 0 && debouncedTitle.length >= 2 ? (
+            <div className="search-empty">No TMDb matches found.</div>
           ) : (
             suggestions.map((suggestion) => (
               <button
@@ -145,6 +158,7 @@ export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
           )}
         </div>
       )}
+      {selectionMessage ? <p className="selection-message">{selectionMessage}</p> : null}
       <div className="selector-group">
         <div className="selector-row">
           <span className="selector-label">Type</span>
@@ -190,10 +204,10 @@ export function TitleInput({ disabled, onSubmit }: TitleInputProps) {
         </div>
       </div>
       <div className="actions action-group">
-        <button className="button like" type="button" disabled={disabled} onClick={() => handleSubmit("liked")}>
+        <button className="button like" type="button" disabled={!canSubmit} onClick={() => handleSubmit("liked")}>
           I like it
         </button>
-        <button className="button dislike" type="button" disabled={disabled} onClick={() => handleSubmit("disliked")}>
+        <button className="button dislike" type="button" disabled={!canSubmit} onClick={() => handleSubmit("disliked")}>
           I don&apos;t like it
         </button>
       </div>

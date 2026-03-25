@@ -78,7 +78,8 @@ async function fetchGenreMap(type: "movie" | "tv") {
   );
 
   if (!response.ok) {
-    throw new Error(`TMDb genre fetch failed for ${type}`);
+    const message = await response.text();
+    throw new Error(`TMDb genre fetch failed for ${type}: ${response.status} ${message}`);
   }
 
   const data = (await response.json()) as GenreResponse;
@@ -117,7 +118,8 @@ export async function searchTmdb(query: string): Promise<TmdbSuggestion[]> {
   );
 
   if (!response.ok) {
-    throw new Error("TMDb search failed");
+    const message = await response.text();
+    throw new Error(`TMDb search failed: ${response.status} ${message}`);
   }
 
   const [movieGenres, tvGenres, data] = await Promise.all([
